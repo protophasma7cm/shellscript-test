@@ -1,0 +1,26 @@
+#!/bin/sh
+usage="Usage:
+      $0 [ロードしたいモジュール] [initrd]
+      ロードしたいモジュールは「,」で区切る。
+"
+initrd="/boot/initrd.gz-custom"
+tmp="/tmp/update-initramfs-custom"
+modules=`echo insmod $1 | sed 's/,/ /g'`
+if [ -z "$1" ]; then
+	echo "$usage"
+	exit 0
+fi
+if [ -n "$2" ]; then
+	initrd="$2"
+fi
+rm -rf "$tmp"; mkdir -p "$tmp"
+unmkinitramfs /boot/initrd.img "$tmp/base"
+unmkinitramfs "$initrd" "$tmp/initrd"
+sed -i "2i$modules" "$tmp/initrd/init"
+rm -rf "$tmp/initrd/lib/modules"
+mkdir -p $tmp/initrd/lib
+cp -rf "$tmp/base/main/usr/lib/modules" "$tmp/initrd/lib/modules"
+cd "$tmp/initrd"
+find ./ | cpio -H newc -o | gzip > ../initrd.gz-custom
+cd ..
+cp -i initrd.gz-custom /boot/initrd.gz-custom
