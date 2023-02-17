@@ -1,0 +1,13 @@
+#!/bin/sh
+if [ -z "$1" ]; then
+	echo "Usage: $0 binary"
+	exit 1
+fi
+for b in `echo $1; ldd $1`; do
+	case $b in
+		/*)
+			echo "$b"
+			mkdir -p `dirname ".$b" `
+			cp "$b" ".$b";;
+	esac
+done
