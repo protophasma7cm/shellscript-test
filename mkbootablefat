@@ -1,0 +1,32 @@
+#!/bin/sh
+usage="Usage: `basename $0` [bootfile] [disk]"
+for o in `echo $@`; do
+	case $o in
+		--help)
+			echo "FATファイルシステムにブートセクタをインストールします"
+			echo "$usage"
+			exit 0;;
+		--version)
+			echo "1.0"
+			exit 1;;
+	esac
+done
+if [ -z "$1" ]; then
+	echo "$usage"
+	echo "ファイルを指定してください"
+	exit 0
+elif [ -z "$2" ]; then
+	echo "$usage"
+	echo "デバイスを指定してください"
+	exit 0
+elif [ -f "$2" ];then
+	echo -n "'$2'はディスクではありません。続けますか？(y/n)"
+	read f
+	[ "x$f" != "xy" ] && echo "終了します。" && exit 0
+fi
+tmp="/tmp/bs"
+mkdir -p "$tmp"
+dd if="$2" of="$tmp/vbr.old" bs=1 count=512
+cp "$tmp/vbr.old" "$tmp/vbr"
+dd if="$1" of="$tmp/vbr" bs=1 count=512 seek=62 skip=62
+dd if="$tmp/vbr" of="$2" bs=1 count=512
