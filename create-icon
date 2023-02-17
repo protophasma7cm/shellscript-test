@@ -1,0 +1,61 @@
+#!/bin/sh
+echo "create-icon, version 22.8.6.3"
+newdir="$1-create-icon"
+size="16x16 32x32 48x48 128x128 256x256 512x512"
+help="
+Usage: `basename $0` image.png [--install]
+
+Option:
+  --remove [IconName]: ユーザーにインストールされている[IconName]を削除します。
+  --help この画面を表示します。
+"
+if ! [ -e "/bin/convert" ]; then
+	echo "convert コマンドが見つかりません"
+	echo "imagemagicをインストールしてください。package:(imagemagick-6.q16)?"
+	exit 1
+fi
+for p in `echo $@`; do
+	case $p in
+		*.png)
+			pngfile=$p
+			echo "$pngfileを使用します。";;
+	esac
+done
+for h in `echo $@`; do
+	case $h in
+		--help)
+			echo "$help"
+			exit 0;;
+		--remove)
+			[ -z "$pngfile" ] && echo "PNGファイルを指定してください" && exit 0
+			rm `find "$HOME/.local/share/icons" -name "$pngfile"` 
+			exit 0;;
+	esac
+done
+if [ "x$1" = "x" ]; then
+	echo "Usage: `basename $0` image.png [--install]"
+	exit 0
+fi
+if ! [ -e "$1" ]; then
+	echo "$1 not found";
+	exit 1
+fi
+rm -rf "$newdir"; mkdir "$newdir"
+for create in `echo $size`; do
+	mkdir -p "$newdir/$create/apps"
+	convert -resize "$create" "$pngfile" "$newdir/$create/apps/$pngfile"
+	if [ -e $newdir/$create/apps/`ls $newdir/$create/apps/*.png | head -1)` ]; then
+		echo "Error! $pngfile: not a png file";
+		exit 1;
+	fi
+done
+echo "OK!($newdir)"
+if [ "x$2" = "x--install" ]; then
+	echo -n "インストールしますか？(y/n)"
+	read s
+	if [ "x$s" = "xy" ]; then
+		echo "$HOMEにインストール中..."
+		mkdir -p "$HOME/.local/share/icons/hicolor"
+		cp -i -rf $newdir/* $HOME/.local/share/icons/hicolor
+	fi
+fi	
