@@ -1,0 +1,6 @@
+#!/bin/sh
+out="$HOME/.cache/mbr/`date '+%s'`"
+mkdir  -p "$out"
+for mbr in `ls /dev/sd*`; do
+  dd if="$mbr" of="$out/`basename $mbr`" bs=1 count=512 
+done >"$home/.mbr.log"
