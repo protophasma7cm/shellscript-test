@@ -1,0 +1,71 @@
+#!/bin/bash
+echo "ver.24.1.4よろしいでしか？" ;read
+chown root:root /
+chmod 755 /
+vi /etc/fstab
+vi /etc/apt/sources.list
+apt update
+passwd root
+adduser kanri
+gpasswd -a kanri sudo
+gpasswd -a kanri video
+dpkg-reconfigure network-manager keyboard-configuration locales
+####http
+apt install apache2 ssh
+echo '<Directory "/var/www/html">
+Options +ExecCGI
+AddHandler cgi-script .cgi .pl .py .rb
+</Directory>' > /etc/apache2/conf-available/cgi-enabled.conf
+a2enmod cgid
+a2enconf cgi-enabled
+systemctl restart apache2
+#
+apt install php libapache2-mod-php
+echo '<FilesMatch "/var/www/html">
+AddHandler php7-script .php
+AddType application/x-httpd-php .php
+</FilesMatch>' > /etc/apache2/conf-available/php-enabled.conf
+echo "phpversion:"
+read phpversion
+a2enmod php"$phpversion"
+a2enconf php-enabled
+systemctl restart apache2
+#####
+echo "upload_max_filesize = 1024M
+post_max_size = 1024M" > /etc/php/"$phpversion"/apache2/conf.d/upload-max.ini
+chmod 777 /var/www/html
+apt install rosegarden qsynth timidity-interfaces-extra vlc vlc-plugin-fluidsynth
+touch /usr/share/pipewire/media-session.d/with-pulseaudio
+echo "chromeをインストールしなさい(exitによりおもらしを開始します。)";bash
+echo "virtualboxをインストールしろ(exitによりダイナミックおもらし)";bash
+echo "httpのじゅんびをしなさい（えぃｔを入力すると赤ちゃんがおもらしします。）";bash
+apt install ghex simplescreenrecorder gparted simple-scan gimp vim dosbox
+echo "apt-mirrorは設定しようねー"
+echo "
+deb-powerpc http://ports.ubuntu.com/ubuntu-ports xenial main
+deb-arm64 http://ports.ubuntu.com/ubuntu-ports jammy main
+deb-i386 http://ubuntutym.u-toyama.ac.jp/ubuntu bionic main
+deb-amd64 http://ubuntutym.u-toyama.ac.jp/ubuntu lts main universe
+deb-amd64 http://ubuntutym.u-toyama.ac.jp/ubuntu nolts main universe"
+read
+exit;
+
+
+Pulse サーバー化 (pipewire)
+mkdir ~/.config/pipewire
+cp /usr/share/pipewire/pipewire-pulse.conf ~/.config/pipewire/
+echo 'pulse.properties = {
+    # the addresses this server listens on
+    server.address = [
+        "unix:native"
+        "tcp:4713"                         # IPv4 and IPv6 on all addresses
+    ]' > ~/.config/pipewire/pipewire-pulse.conf
+
+
+Pulse サーバー化
+cp /etc/pulse/default.pa ~/.config/pulse/
+echo "load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1;192.168.11.12" > ~/.config/pulse/default.pa
+pulseaudio -k
+PULSE_SERVER=localhost aplay *.wav
+
+
