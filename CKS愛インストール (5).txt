@@ -1,0 +1,95 @@
+#!/bin/bash
+echo "ver.R7.4.24.1よろしいでしか？" ;read
+chown root:root /
+chmod 755 /
+vi /etc/fstab
+vi /etc/apt/sources.list
+vi /etc/apt/sources.list.d/ubuntu.sources
+vi /etc/apt/sources.list.d/debian.sources
+apt update
+echo "本当にsources.listは大丈夫なんでしょうね？？？信用なりませんわ、、、";read
+passwd root
+adduser kanri
+gpasswd -a kanri sudo
+gpasswd -a kanri video
+gpasswd -a kanri floppy
+dpkg-reconfigure network-manager keyboard-configuration locales tzdata
+##########http
+apt -y install apache2 ssh
+echo '<Directory "/var/www/html">
+Options +ExecCGI
+AddHandler cgi-script .cgi .pl .py .rb
+</Directory>' > /etc/apache2/conf-available/cgi-enabled.conf
+a2enmod cgid
+a2enconf cgi-enabled
+systemctl restart apache2
+
+apt -y install php libapache2-mod-php
+echo '<FilesMatch "/var/www/html">
+AddHandler php7-script .php
+AddType application/x-httpd-php .php
+</FilesMatch>' > /etc/apache2/conf-available/php-enabled.conf
+
+php --version
+echo "phpversionを入れろ入れろ入れろはよ入れろ:"
+read phpversion
+a2enmod php"$phpversion"
+a2enconf php-enabled
+systemctl restart apache2
+
+echo "upload_max_filesize = 1024M
+post_max_size = 1024M" > /etc/php/"$phpversion"/apache2/conf.d/upload-max.ini
+chmod 777 /var/www/html
+##########/http
+apt -y install rosegarden qsynth timidity-interfaces-extra vlc vlc-plugin-fluidsynth
+apt -y install ghex simplescreenrecorder gparted simple-scan gimp vim dosbox libreoffice-core fluxbox fbterm qemu-system qemu-user-static hfsutils hfsprogs hfsplus hfsutils-tcltk beep xterm debootstrap flatpak gnome-sound-recorder systemd-container apt-mirror git command-not-found
+apt -y install language-pack-gnome-ja language-pack-ja
+apt -y install folder-color
+apt -y install apfsprogs 
+apt -y install unionfs-fuse btrfs-progs
+touch /usr/share/pipewire/media-session.d/with-pulseaudio
+echo "時刻はあのゴミOSでも合わせちゃいますか？？"
+read c; [ x$c = xy ] && timedatectl set-local-rtc 1
+vi /etc/grub.d/40_custom
+echo "chromeをインストールしなさい(exitによりおもらしを開始します。)";bash
+echo "virtualboxをインストールしろ(exitによりダイナミックおもらし)";bash
+gpasswd -a kanri vboxusers
+echo "httpのじゅんびをしなさい（えぃｔを入力すると赤ちゃんがおもらしします。）";bash
+apt update;command-not-found pw-jack;echo "pw-jack";bash
+echo "flatpak(cheese,brasero)はインストールしないと赤ん坊が泣きます赤ん坊が泣きます";bash
+echo "optの中身は完成してますよね？？？";read
+wget gitlab.com/protophasma.7cm/build-images/-/raw/main/frog.jpg -O /boot/grub/frog.jpg
+echo "apt-mirrorは設定しようねー"
+echo "
+deb-powerpc http://ports.ubuntu.com/ubuntu-ports xenial main
+deb-arm64 http://ports.ubuntu.com/ubuntu-ports jammy main
+deb-i386 http://ubuntutym.u-toyama.ac.jp/ubuntu bionic main
+deb-amd64 http://ubuntutym.u-toyama.ac.jp/ubuntu lts main universe
+deb-amd64 http://ubuntutym.u-toyama.ac.jp/ubuntu nolts main universe"
+read
+exit;
+
+
+
+apt install pipewire pipewire-pulse pipewire-audio-client-libraries
+pipewire　ダミー出力　直し方
+touch /usr/share/pipewire/media-session.d/with-pulseaudio
+
+Pulse サーバー化 (pipewire)
+mkdir ~/.config/pipewire
+cp /usr/share/pipewire/pipewire-pulse.conf ~/.config/pipewire/
+echo 'pulse.properties = {
+    # the addresses this server listens on
+    server.address = [
+        "unix:native"
+        "tcp:4713"                         # IPv4 and IPv6 on all addresses
+    ]' >> ~/.config/pipewire/pipewire-pulse.conf
+
+
+Pulse サーバー化
+cp /etc/pulse/default.pa ~/.config/pulse/
+echo "load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1;192.168.11.12" > ~/.config/pulse/default.pa
+pulseaudio -k
+PULSE_SERVER=localhost aplay *.wav
+
+
